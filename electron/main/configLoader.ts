@@ -48,13 +48,14 @@ export function loadConfig(): KioskConfig {
     }
   }
 
-  // In development, always talk to the local backend regardless of config.json.
-  // When packaged for Thinvent, NODE_ENV is not "development" so the Render URL is used.
+  // To test against your LOCAL backend instead of Render, uncomment this block:
+  /*
   if (process.env.NODE_ENV === "development") {
     // eslint-disable-next-line no-console
     console.log("[config] DEV mode — overriding serverUrl to http://localhost:8000");
     config = { ...config, serverUrl: "http://localhost:8000" };
   }
+  */
 
   return config;
 }

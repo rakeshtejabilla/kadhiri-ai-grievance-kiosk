@@ -1,6 +1,6 @@
 {
   "machineId": "KADHIRI-KIOSK-001",
-  "serverUrl": "https://kadhiri-grievance-backend.onrender.com",
+  "serverUrl": "https://kadhiri-ai-grievance-backend.onrender.com",
   "location": "Kadhiri Mandal Office, Main Entrance",
   "district": "Kadhiri",
   "retryInterval": 60000,
