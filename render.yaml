@@ -1,0 +1,39 @@
+# ============================================================
+# render.yaml — Infrastructure-as-Code for Render.com
+# Deploy the Kadhiri AI Grievance FastAPI backend
+# This file lives in the root of the backend/ GitHub repo.
+# Docs: https://render.com/docs/render-yaml-spec
+# ============================================================
+
+services:
+  - type: web
+    name: kadhiri-grievance-backend
+    runtime: python
+    region: singapore          # closest to India; change to oregon if preferred
+    plan: free                 # upgrade to starter for always-on
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash start.sh
+    healthCheckPath: /health
+
+    envVars:
+      # ── Application ───────────────────────────────────────
+      - key: PROJECT_NAME
+        value: "Kadhiri AI Public Grievance Backend"
+      - key: API_V1_STR
+        value: "/api/v1"
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "1440"
+      - key: UPLOAD_TEMP_DIRECTORY
+        value: "./temp_audio"
+      - key: CSV_DIRECTORY
+        value: "./csv_exports"
+
+      # ── Secrets — set these in the Render dashboard ───────
+      # Do NOT commit real values here. Use the Render dashboard
+      # under Environment → Secret Files / Environment Variables.
+      - key: SECRET_KEY
+        sync: false            # Render will prompt you to fill this in
+      - key: DATABASE_URL
+        sync: false            # Paste your Neon connection string here
+      - key: OPENAI_API_KEY
+        sync: false

@@ -8,7 +8,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
 
     DATABASE_URL: str
-    REDIS_URL: str
+    # Redis is optional — not required when running on Render free tier
+    REDIS_URL: Optional[str] = None
 
     OPENAI_API_KEY: str
 
