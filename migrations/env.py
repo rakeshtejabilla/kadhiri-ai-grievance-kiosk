@@ -19,6 +19,10 @@ def get_url():
     url = settings.DATABASE_URL
     if url.startswith("postgresql://"):
         url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    
+    # Strip sslmode from URL — asyncpg handles it via connect_args instead
+    if "sslmode=require" in url:
+        url = url.replace("?sslmode=require", "").replace("&sslmode=require", "")
     return url
 
 def run_migrations_offline() -> None:
@@ -40,10 +44,17 @@ def do_run_migrations(connection) -> None:
 async def run_async_migrations() -> None:
     configuration = config.get_section(config.config_ini_section)
     configuration["sqlalchemy.url"] = get_url()
+    
+    # Neon DB (and other cloud Postgres providers) require SSL
+    connect_args = {}
+    if "neon.tech" in settings.DATABASE_URL or "sslmode=require" in settings.DATABASE_URL:
+        connect_args = {"ssl": "require"}
+
     connectable = async_engine_from_config(
         configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args=connect_args,
     )
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
