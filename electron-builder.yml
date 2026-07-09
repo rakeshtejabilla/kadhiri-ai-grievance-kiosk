@@ -1,0 +1,43 @@
+appId: in.gov.kadhiri.grievancekiosk
+productName: Kadhiri AI Public Grievance Kiosk
+copyright: Copyright © Kadhiri District Administration
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - config.json
+  - package.json
+
+extraResources:
+  - from: config.json
+    to: config.json
+
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+        - arm64
+    - target: deb
+      arch:
+        - x64
+        - arm64
+  category: Utility
+  icon: build/icon.png
+  desktop:
+    entry:
+      Name: Kadhiri Grievance Kiosk
+      Comment: Public Grievance Recording Kiosk
+      Terminal: "false"
+      Type: Application
+      Categories: Utility;
+
+deb:
+  depends:
+    - alsa-utils
+
+publish: null

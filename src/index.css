@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Inter", "Segoe UI", "Noto Sans", system-ui, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  /* cursor: none; */
+}
+
+/* A public kiosk has no mouse, but keep a visible cursor in dev for the technician. */
+/* html[data-dev="true"] body {
+  cursor: default;
+} */
+
+::-webkit-scrollbar {
+  display: none;
+}

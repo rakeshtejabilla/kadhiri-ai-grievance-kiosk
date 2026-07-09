@@ -1,0 +1,9 @@
+{
+  "machineId": "KADHIRI-KIOSK-001",
+  "serverUrl": "http://localhost:8000",
+  "location": "Kadhiri Mandal Office, Main Entrance",
+  "district": "Kadhiri",
+  "retryInterval": 60000,
+  "maxRecordingDurationMs": 120000,
+  "mockHardware": false
+}

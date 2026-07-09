@@ -1,0 +1,16 @@
+[Unit]
+Description=Kadhiri AI Public Grievance Kiosk
+After=graphical.target sound.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Adjust the path below if the AppImage/deb install location differs.
+ExecStart=/opt/kadhiri-kiosk/kadhiri-ai-grievance-kiosk --no-sandbox
+Restart=always
+RestartSec=3
+Environment=DISPLAY=:0
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=graphical.target
