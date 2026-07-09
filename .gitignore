@@ -1,0 +1,83 @@
+# ============================================================
+# Backend — Python / FastAPI / Alembic .gitignore
+# ============================================================
+
+# ── Python bytecode & caches ────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyd
+*.pyo
+
+# ── Virtual environments ─────────────────────────────────────
+venv/
+.venv/
+env/
+.env_folder/
+ENV/
+env.bak/
+venv.bak/
+
+# ── Distribution / packaging ─────────────────────────────────
+dist/
+build/
+*.egg-info/
+*.egg
+MANIFEST
+.eggs/
+wheels/
+
+# ── Testing & coverage ───────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+nosetests.xml
+test-results/
+
+# ── Type-checking & linting ──────────────────────────────────
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+
+# ── Environment / secrets — NEVER commit ────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Alembic ──────────────────────────────────────────────────
+# Keep migrations/versions tracked; ignore compiled artefacts
+migrations/__pycache__/
+migrations/versions/__pycache__/
+
+# ── Temporary upload / export directories ────────────────────
+temp_audio/
+csv_exports/
+uploads/
+
+# ── SQLite databases (local dev) ─────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Logs ─────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── IDE / OS artefacts ───────────────────────────────────────
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ── Jupyter / IPython ────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Celery ───────────────────────────────────────────────────
+celerybeat-schedule
+celerybeat.pid
