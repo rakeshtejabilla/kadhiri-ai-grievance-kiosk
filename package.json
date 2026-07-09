@@ -15,7 +15,7 @@
     "preview": "vite preview",
     "electron:dev": "concurrently -k \"cross-env NODE_ENV=development vite\" \"npm:electron:watch\"",
     "electron:watch": "node scripts/mark-commonjs.cjs && tsc -p electron/tsconfig.json --watch --preserveWatchOutput",
-    "electron:start": "wait-on tcp:5173 file:dist-electron/main/index.js && electron .",
+    "electron:start": "wait-on tcp:5173 file:dist-electron/main/index.js && cross-env NODE_ENV=development electron .",
     "start": "cross-env NODE_ENV=development concurrently -k \"npm:dev\" \"npm:electron:watch\" \"npm:electron:start\"",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p electron/tsconfig.json --noEmit",
     "lint": "eslint . --ext .ts,.tsx",

@@ -15,9 +15,10 @@ const DEFAULT_CONFIG: KioskConfig = {
 
 /**
  * Config resolution order:
- *   1. `config.json` next to the packaged app (installed kiosks edit this).
- *   2. `config.json` in the Electron userData directory (first-run copy).
- *   3. Built-in defaults above, which also get written out as a starting
+ *   1. In development (NODE_ENV=development), always use localhost backend.
+ *   2. `config.json` next to the packaged app (installed kiosks edit this).
+ *   3. `config.json` in the Electron userData directory (first-run copy).
+ *   4. Built-in defaults above, which also get written out as a starting
  *      point so the file always exists for an installer/technician to edit.
  */
 export function loadConfig(): KioskConfig {
@@ -30,18 +31,30 @@ export function loadConfig(): KioskConfig {
       ? userDataConfigPath
       : null;
 
+  let config: KioskConfig;
+
   if (!sourcePath) {
     writeFileSync(userDataConfigPath, JSON.stringify(DEFAULT_CONFIG, null, 2), "utf-8");
-    return DEFAULT_CONFIG;
+    config = DEFAULT_CONFIG;
+  } else {
+    try {
+      const raw = readFileSync(sourcePath, "utf-8");
+      const parsed = JSON.parse(raw) as Partial<KioskConfig>;
+      config = { ...DEFAULT_CONFIG, ...parsed };
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(`Failed to parse config at ${sourcePath}, falling back to defaults`, err);
+      config = DEFAULT_CONFIG;
+    }
   }
 
-  try {
-    const raw = readFileSync(sourcePath, "utf-8");
-    const parsed = JSON.parse(raw) as Partial<KioskConfig>;
-    return { ...DEFAULT_CONFIG, ...parsed };
-  } catch (err) {
+  // In development, always talk to the local backend regardless of config.json.
+  // When packaged for Thinvent, NODE_ENV is not "development" so the Render URL is used.
+  if (process.env.NODE_ENV === "development") {
     // eslint-disable-next-line no-console
-    console.error(`Failed to parse config at ${sourcePath}, falling back to defaults`, err);
-    return DEFAULT_CONFIG;
+    console.log("[config] DEV mode — overriding serverUrl to http://localhost:8000");
+    config = { ...config, serverUrl: "http://localhost:8000" };
   }
+
+  return config;
 }
