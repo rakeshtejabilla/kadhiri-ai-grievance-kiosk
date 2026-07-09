@@ -12,9 +12,10 @@ if db_url.startswith("postgresql://"):
 # The ?sslmode=require param in the URL is handled at the driver level via connect_args.
 connect_args = {}
 if "neon.tech" in db_url or "sslmode=require" in db_url:
-    # Strip sslmode from URL query string — asyncpg handles it via connect_args instead
-    db_url = db_url.replace("?sslmode=require", "").replace("&sslmode=require", "")
     connect_args = {"ssl": "require"}
+
+if "?" in db_url:
+    db_url = db_url.split("?")[0]
 
 engine = create_async_engine(db_url, echo=False, connect_args=connect_args)
 AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)

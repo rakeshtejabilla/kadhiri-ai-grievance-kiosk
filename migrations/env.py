@@ -20,9 +20,9 @@ def get_url():
     if url.startswith("postgresql://"):
         url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
     
-    # Strip sslmode from URL — asyncpg handles it via connect_args instead
-    if "sslmode=require" in url:
-        url = url.replace("?sslmode=require", "").replace("&sslmode=require", "")
+    if "?" in url:
+        url = url.split("?")[0]
+        
     return url
 
 def run_migrations_offline() -> None:
