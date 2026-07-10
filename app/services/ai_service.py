@@ -50,31 +50,32 @@ async def process_audio(file_path: str) -> tuple[str, str]:
         if os.path.exists(file_path):
             os.remove(file_path)
 
-async def extract_complaint_info(transcript: str) -> dict:
+async def extract_complaint_info(raw_transcript: str, english_translation: str) -> dict:
     """
-    Sends the transcript to OpenAI GPT to extract structured complaint info.
-    The transcript is passed as a separate user message to avoid quote-breaking
-    issues when the Telugu text contains double quotes or special characters.
+    Sends the transcript to OpenAI GPT to extract structured complaint info and 
+    fix the spelling of the native language transcription using the English context.
     """
     system_prompt = (
         "You are a data extraction assistant for a public grievance kiosk in India. "
-        "The user will give you an English translation of a spoken grievance (originally in Telugu, Hindi, or English). "
-        "Extract and return ONLY a valid JSON object with these exact keys:\n"
+        "The user will provide a raw transcribed text (which may have phonetic errors) and its perfect English translation. "
+        "Your task is to fix the raw transcript's spelling in its ORIGINAL spoken language (Telugu, Hindi, or English), "
+        "and extract the required fields. Extract and return ONLY a valid JSON object with these exact keys:\n"
         "  - name (string or null): citizen's name if mentioned\n"
         "  - village (string or null): village or area name if mentioned\n"
         "  - address (string or null): full address if mentioned\n"
         "  - complaint (string): a clear English summary of the core grievance\n"
         "  - category (string or null): e.g. Water Supply, Electricity, Roads, Sanitation, Healthcare, etc.\n"
         "  - priority (string or null): 'High', 'Medium', or 'Low' based on urgency\n"
+        "  - corrected_transcript (string): The cleaned-up, properly spelled transcript in the ORIGINAL spoken language.\n"
         "Output JSON only. No explanation, no markdown."
     )
 
     try:
         response = await client.chat.completions.create(
-            model="gpt-4o-mini",   # Better multilingual support than gpt-3.5-turbo
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Grievance transcript:\n{transcript}"},
+                {"role": "user", "content": f"Raw Transcript:\n{raw_transcript}\n\nEnglish Translation:\n{english_translation}"},
             ],
             response_format={"type": "json_object"},
             max_tokens=1024,
