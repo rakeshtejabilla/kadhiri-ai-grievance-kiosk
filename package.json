@@ -2,7 +2,7 @@
   "name": "kadhiri-ai-grievance-kiosk",
   "version": "1.0.0",
   "description": "Kadhiri AI Public Grievance Kiosk - unattended audio-complaint recording kiosk",
-  "author": "Kadhiri District Administration",
+  "author": "Kadhiri District Administration <admin@kadhiri.gov.in>",
   "license": "UNLICENSED",
   "private": true,
   "main": "dist-electron/main/index.js",
