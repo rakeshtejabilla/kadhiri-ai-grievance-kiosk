@@ -23,10 +23,6 @@ async def process_audio(file_path: str) -> tuple[str, str]:
             return await client.audio.transcriptions.create(
                 model="whisper-1",
                 file=f,
-                # Neutral English-only hint — no non-Latin script characters here.
-                # Putting Telugu/Hindi script in the prompt biases Whisper's output
-                # toward that script even when a different language is spoken.
-                prompt="A citizen is reporting a public grievance about local issues such as water supply, electricity, roads, or sanitation.",
                 response_format="text"
             )
 
