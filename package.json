@@ -20,7 +20,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p electron/tsconfig.json --noEmit",
     "lint": "eslint . --ext .ts,.tsx",
     "package": "npm run build && electron-builder --linux",
-    "package:arm64": "npm run build && electron-builder --linux --arm64"
+    "package:arm64": "npm run build && electron-builder --linux AppImage --arm64"
   },
   "dependencies": {
     "axios": "^1.7.9",
