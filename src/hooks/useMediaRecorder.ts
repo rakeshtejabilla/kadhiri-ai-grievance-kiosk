@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { ipcClient } from "@/services/ipcClient";
 
 /**
  * Handles renderer-side audio recording via the Web MediaRecorder API.
@@ -16,7 +15,7 @@ export function useMediaRecorder(): void {
 
   useEffect(() => {
     const api = window.electronAPI;
-    if (!api?.onCmdStartRecording) return; // not in Electron context
+    if (!api?.onCmdStartRecording || !api?.onCmdStopRecording) return; // not in Electron context
 
     const unsubStart = api.onCmdStartRecording(async () => {
       chunksRef.current = [];
