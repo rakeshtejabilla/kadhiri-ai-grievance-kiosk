@@ -16,7 +16,7 @@ import type {
  *   machine_id, timestamp, location, audio (the .wav file)
  */
 export class HttpUploaderProvider implements UploaderProvider {
-  constructor(private readonly serverUrl: string, private readonly timeoutMs = 30_000) {}
+  constructor(private readonly serverUrl: string, private readonly timeoutMs = 120_000) {}
 
   async upload(
     filePath: string,
