@@ -1,8 +1,5 @@
-import asyncio
 from logging.config import fileConfig
-
-from sqlalchemy import pool
-from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy import pool, engine_from_config
 from alembic import context
 
 from app.core.config import settings
@@ -17,12 +14,8 @@ target_metadata = Base.metadata
 
 def get_url():
     url = settings.DATABASE_URL
-    if url.startswith("postgresql://"):
-        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
-    
-    if "?" in url:
-        url = url.split("?")[0]
-        
+    if url.startswith("postgresql+asyncpg://"):
+        url = url.replace("postgresql+asyncpg://", "postgresql://", 1)
     return url
 
 def run_migrations_offline() -> None:
@@ -36,32 +29,22 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
-def do_run_migrations(connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
-    with context.begin_transaction():
-        context.run_migrations()
-
-async def run_async_migrations() -> None:
+def run_migrations_online() -> None:
     configuration = config.get_section(config.config_ini_section)
     configuration["sqlalchemy.url"] = get_url()
     
-    # Neon DB (and other cloud Postgres providers) require SSL
-    connect_args = {}
-    if "neon.tech" in settings.DATABASE_URL or "sslmode=require" in settings.DATABASE_URL:
-        connect_args = {"ssl": "require"}
-
-    connectable = async_engine_from_config(
+    connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
-        connect_args=connect_args,
     )
-    async with connectable.connect() as connection:
-        await connection.run_sync(do_run_migrations)
-    await connectable.dispose()
 
-def run_migrations_online() -> None:
-    asyncio.run(run_async_migrations())
+    with connectable.connect() as connection:
+        context.configure(
+            connection=connection, target_metadata=target_metadata
+        )
+        with context.begin_transaction():
+            context.run_migrations()
 
 if context.is_offline_mode():
     run_migrations_offline()
