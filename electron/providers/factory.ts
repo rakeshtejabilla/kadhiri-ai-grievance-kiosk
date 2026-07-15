@@ -3,7 +3,7 @@ import { app, type BrowserWindow } from "electron";
 import type { KioskConfig } from "../shared/ipc-contract.js";
 import type { MotionSensorProvider } from "./motion/MotionSensorProvider.js";
 import { MockMotionSensorProvider } from "./motion/MockMotionSensorProvider.js";
-// import { GpioMotionSensorProvider } from "./motion/GpioMotionSensorProvider.js";
+import { GpioMotionSensorProvider } from "./motion/GpioMotionSensorProvider.js";
 import type { AudioRecorderProvider } from "./audio/AudioRecorderProvider.js";
 import { RendererAudioRecorderProvider } from "./audio/RendererAudioRecorderProvider.js";
 import type { UploaderProvider } from "./network/UploaderProvider.js";
@@ -36,11 +36,13 @@ export function createProviders(config: KioskConfig, window: BrowserWindow): Kio
   const userDataDir = app.getPath("userData");
   const recordingsDir = path.join(userDataDir, "recordings");
 
-  const motion: MotionSensorProvider = new MockMotionSensorProvider();
-  // Production Pi wiring once GpioMotionSensorProvider is implemented:
-  // const motion: MotionSensorProvider = config.mockHardware
-  //   ? new MockMotionSensorProvider()
-  //   : new GpioMotionSensorProvider(17);
+  // In production (mockHardware: false) use the real PIR GPIO sensor.
+  // In development (mockHardware: true) use keyboard shortcuts (Ctrl+M / F9, Ctrl+N / F10).
+  // GpioMotionSensorProvider also registers the keyboard shortcuts so engineers
+  // can manually trigger the workflow on the Pi without waving at the sensor.
+  const motion: MotionSensorProvider = config.mockHardware
+    ? new MockMotionSensorProvider()
+    : new GpioMotionSensorProvider(config.gpioPin ?? 17);
 
   // RendererAudioRecorderProvider uses the browser's MediaRecorder API.
   // Works natively on Windows, macOS and Linux without any CLI tools.

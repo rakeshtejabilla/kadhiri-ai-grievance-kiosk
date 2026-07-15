@@ -49,6 +49,12 @@ export interface KioskConfig {
   maxRecordingDurationMs: number;
   /** true when running with Mock*Provider implementations (no real GPIO/mic hardware) */
   mockHardware: boolean;
+  /**
+   * BCM GPIO pin number the PIR sensor OUT wire is connected to.
+   * Defaults to 17 (physical Pin 11) if omitted.
+   * Only used when mockHardware is false.
+   */
+  gpioPin?: number;
 }
 
 export interface RecordingStoppedPayload {
