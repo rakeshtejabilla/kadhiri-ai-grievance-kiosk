@@ -36,7 +36,14 @@ async def upload_audio(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Receives an audio file from the kiosk, transcribes it, extracts details, and saves to DB.
+    Receives an audio file from the kiosk, transcribes it, translates, extracts details, and saves to DB.
+
+    Processing flow:
+      1. Whisper transcribes audio → raw transcript stored in DB exactly as-is (no correction).
+      2. ChatGPT translates the raw transcript to English → stored in transcript_english.
+      3. ChatGPT extracts name, village, address, complaint summary, category, priority
+         from the English translation only.
+
     The audio file is NOT stored permanently.
     """
     if not audio.filename.endswith((".wav", ".webm")):
@@ -55,13 +62,16 @@ async def upload_audio(
         await out_file.write(content)
 
     try:
-        # Step 2: Transcribe via Whisper — returns (original, english_translation)
-        transcript, transcript_english = await ai_service.process_audio(temp_file_path)
+        # Step 2: Transcribe via Whisper — returns raw transcript in original language (unchanged)
+        raw_transcript = await ai_service.process_audio(temp_file_path)
 
-        # Step 3: Extract structured data and correct the native spelling
-        extracted_data = await ai_service.extract_complaint_info(transcript, transcript_english)
+        # Step 3: Translate raw transcript to English via ChatGPT
+        transcript_english = await ai_service.translate_to_english(raw_transcript)
 
-        # Step 4: Validate Machine ID
+        # Step 4: Extract structured fields from the English translation
+        extracted_data = await ai_service.extract_complaint_info(transcript_english)
+
+        # Step 5: Validate Machine ID
         machine_query = await db.execute(select(Machine).filter(Machine.id == machine_id))
         machine = machine_query.scalars().first()
         if not machine:
@@ -71,14 +81,16 @@ async def upload_audio(
             await db.commit()
             await db.refresh(machine)
 
-        # Step 5: Generate Complaint ID and Store
+        # Step 6: Generate Complaint ID and store to DB
+        # NOTE: transcript = raw_transcript (exactly what Whisper returned, not corrected)
+        #       transcript_english = ChatGPT's English translation
         complaint_id = await generate_complaint_id(db)
         
         new_complaint = Complaint(
             complaint_id=complaint_id,
             machine_id=machine_id,
-            transcript=extracted_data.get("corrected_transcript", transcript),
-            transcript_english=transcript_english,
+            transcript=raw_transcript,              # Raw, uncorrected original language text
+            transcript_english=transcript_english,  # ChatGPT English translation
             citizen_name=extracted_data.get("name"),
             village=extracted_data.get("village"),
             address=extracted_data.get("address"),
