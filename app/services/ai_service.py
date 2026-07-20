@@ -1,24 +1,75 @@
 from openai import AsyncOpenAI
 import json
 import os
+import asyncio
 import logging
 from app.core.config import settings
 
 client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 logger = logging.getLogger(__name__)
 
+
+async def convert_to_wav(input_path: str) -> str:
+    """
+    Converts any audio file (WebM, Opus, etc.) to a standard 16kHz mono PCM WAV
+    using ffmpeg. This is critical for Whisper accuracy — WebM/Opus files recorded
+    in real-time by the browser's MediaRecorder lack a proper duration header,
+    which causes Whisper to truncate long transcripts.
+
+    Returns the path to the new WAV file. The original input file is deleted.
+    """
+    wav_path = input_path.rsplit(".", 1)[0] + ".wav"
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "ffmpeg", "-y",
+            "-i", input_path,
+            "-ar", "16000",   # 16kHz sample rate (optimal for Whisper)
+            "-ac", "1",        # mono
+            "-f", "wav",
+            wav_path,
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        _, stderr = await proc.communicate()
+        if proc.returncode != 0:
+            err_msg = stderr.decode(errors="replace") if stderr else "unknown ffmpeg error"
+            logger.error(f"ffmpeg conversion failed: {err_msg}")
+            raise RuntimeError(f"ffmpeg conversion failed: {err_msg}")
+        logger.info(f"[convert_to_wav] Converted {input_path} -> {wav_path}")
+        return wav_path
+    finally:
+        # Always remove the original non-WAV file
+        if os.path.exists(input_path):
+            os.remove(input_path)
+
+
 async def process_audio(file_path: str) -> str:
     """
-    Sends the audio file to OpenAI Whisper API for transcription only.
+    Converts the recorded audio to WAV, then sends it to OpenAI Whisper for transcription.
     Language is auto-detected (Telugu, Hindi, English, etc.).
     Returns the raw transcript exactly as Whisper produces it — no correction.
-    The audio file is deleted immediately after transcription.
+
+    WHY the conversion step?
+    The browser's MediaRecorder produces WebM/Opus files in real-time. These files
+    have no duration metadata in their headers, which causes Whisper to sometimes
+    stop transcribing early — especially for long, non-English audio. Converting to
+    a proper WAV first ensures Whisper sees the complete audio with correct headers.
+
+    Both the original and the converted WAV are deleted after transcription.
     """
+    # Step 1: Convert WebM → WAV (fixes Whisper truncation on real-time recordings)
+    wav_path = await convert_to_wav(file_path)
     try:
-        with open(file_path, "rb") as f:
+        with open(wav_path, "rb") as f:
             transcript = await client.audio.transcriptions.create(
                 model="whisper-1",
                 file=f,
+                prompt=(
+                    "This is a long and detailed public grievance from a citizen of India. "
+                    "The speaker may speak in Telugu, Hindi, English, or a mix. "
+                    "Please transcribe the complete audio accurately in its original spoken language "
+                    "without skipping, translating, or truncating any part."
+                ),
                 response_format="text"
             )
         return transcript
@@ -26,9 +77,9 @@ async def process_audio(file_path: str) -> str:
         logger.error(f"Whisper transcription error: {e}")
         raise
     finally:
-        # STRICT REQUIREMENT: Delete temporary audio immediately after transcription
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        # Delete the converted WAV after transcription
+        if os.path.exists(wav_path):
+            os.remove(wav_path)
 
 
 async def translate_to_english(raw_transcript: str) -> str:
