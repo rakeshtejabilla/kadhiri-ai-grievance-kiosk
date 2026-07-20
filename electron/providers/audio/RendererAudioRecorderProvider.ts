@@ -49,7 +49,7 @@ export class RendererAudioRecorderProvider implements AudioRecorderProvider {
     this.startedAt = Date.now();
     this.currentFilePath = path.join(
       this.recordingsDir,
-      `complaint-${this.startedAt}.wav`,
+      `complaint-${this.startedAt}.webm`,
     );
     this.window.webContents.send(IpcChannels.CMD_START_RECORDING);
   }
