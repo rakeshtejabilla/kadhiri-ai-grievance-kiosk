@@ -1,4 +1,4 @@
-import type { BrowserWindow } from "electron";
+import { ipcMain, type BrowserWindow } from "electron";
 import { IpcChannels, type KioskConfig } from "../shared/ipc-contract.js";
 import type { KioskProviders } from "../providers/factory.js";
 
@@ -16,6 +16,8 @@ export class KioskOrchestrator {
   private safetyTimer: NodeJS.Timeout | null = null;
   private retryTimer: NodeJS.Timeout | null = null;
   private uploadAttempt = 0;
+  private isPrompting = false;
+  private readonly onPromptDone = () => void this.handlePromptDone();
 
   constructor(
     private readonly window: BrowserWindow,
@@ -24,12 +26,14 @@ export class KioskOrchestrator {
   ) {}
 
   async start(): Promise<void> {
+    ipcMain.on(IpcChannels.PROMPT_DONE, this.onPromptDone);
     this.providers.motion.onMotionDetected(() => void this.handleMotionDetected());
     this.providers.motion.onMotionLost(() => void this.handleMotionLost());
     await this.providers.motion.start();
   }
 
   async stop(): Promise<void> {
+    ipcMain.removeListener(IpcChannels.PROMPT_DONE, this.onPromptDone);
     await this.providers.motion.stop();
     if (this.safetyTimer) clearTimeout(this.safetyTimer);
     if (this.retryTimer) clearTimeout(this.retryTimer);
@@ -41,7 +45,15 @@ export class KioskOrchestrator {
   }
 
   private async handleMotionDetected(): Promise<void> {
-    if (this.providers.audio.isRecording()) return; // already recording, ignore re-triggers
+    if (this.providers.audio.isRecording() || this.isPrompting) return; // already recording or prompting, ignore re-triggers
+
+    this.isPrompting = true;
+    this.send(IpcChannels.PLAY_PROMPT);
+  }
+
+  private async handlePromptDone(): Promise<void> {
+    if (!this.isPrompting) return; // ignoring duplicate or stray events
+    this.isPrompting = false;
 
     this.recordingStartedAt = Date.now();
     await this.providers.audio.start();

@@ -33,6 +33,10 @@ const electronAPI = {
     on("kiosk:upload-retry-scheduled", cb),
 
   // Renderer-side audio recording (Windows: no arecord/ffmpeg needed)
+  onPlayPrompt: (cb: () => void): Unsubscribe => on("kiosk:play-prompt", cb),
+  sendPromptDone: (): void => {
+    ipcRenderer.send("kiosk:prompt-done");
+  },
   onCmdStartRecording: (cb: () => void): Unsubscribe =>
     on("kiosk:cmd-start-recording", cb),
   onCmdStopRecording: (cb: () => void): Unsubscribe =>

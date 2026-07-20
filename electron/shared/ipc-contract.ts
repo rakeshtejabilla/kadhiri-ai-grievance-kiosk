@@ -11,6 +11,7 @@ export const IpcChannels = {
   // main -> renderer (kiosk lifecycle events)
   MOTION_DETECTED: "kiosk:motion-detected",
   MOTION_LOST: "kiosk:motion-lost",
+  PLAY_PROMPT: "kiosk:play-prompt",
   RECORDING_STARTED: "kiosk:recording-started",
   RECORDING_STOPPED: "kiosk:recording-stopped",
   RECORDING_TICK: "kiosk:recording-tick",
@@ -23,6 +24,7 @@ export const IpcChannels = {
   // renderer -> main (invoke/handle)
   GET_CONFIG: "kiosk:get-config",
   GET_APP_VERSION: "kiosk:get-app-version",
+  PROMPT_DONE: "kiosk:prompt-done",
 
   // renderer → main: Web MediaRecorder audio (Windows fallback)
   AUDIO_CHUNK: "kiosk:audio-chunk",        // renderer sends ArrayBuffer chunk

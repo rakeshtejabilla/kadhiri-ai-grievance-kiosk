@@ -25,6 +25,16 @@ export function useKioskMachine(): void {
         store.startRecording();
       }),
 
+      ipcClient.onPlayPrompt(() => {
+        const audio = new Audio("/audio/prompt.mp3");
+        const onDone = () => {
+          ipcClient.sendPromptDone?.();
+        };
+        audio.onended = onDone;
+        audio.onerror = onDone;
+        audio.play().catch(onDone); // Fallback to immediate start if browser blocks autoplay
+      }),
+
       ipcClient.onRecordingStopped(() => {
         store.stopRecordingAndUpload();
       }),

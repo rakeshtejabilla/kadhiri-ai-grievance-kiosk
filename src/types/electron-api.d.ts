@@ -21,6 +21,8 @@ export interface ElectronAPI {
   onUploadRetryScheduled: (cb: (payload: { attempt: number }) => void) => Unsubscribe;
 
   // Renderer-side audio recording
+  onPlayPrompt: (cb: () => void) => Unsubscribe;
+  sendPromptDone: () => void;
   onCmdStartRecording?: (cb: () => void) => Unsubscribe;
   onCmdStopRecording?: (cb: () => void) => Unsubscribe;
   sendAudioDone?: (wavBuffer: ArrayBuffer) => void;

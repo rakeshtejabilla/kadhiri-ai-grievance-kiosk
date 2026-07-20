@@ -29,6 +29,8 @@ const browserFallback: ElectronAPI = {
   onUploadSucceeded: () => noopUnsubscribe,
   onUploadFailed: () => noopUnsubscribe,
   onUploadRetryScheduled: () => noopUnsubscribe,
+  onPlayPrompt: () => noopUnsubscribe,
+  sendPromptDone: () => {},
 };
 
 function getApi(): ElectronAPI {
@@ -45,4 +47,6 @@ export const ipcClient: ElectronAPI = {
   onUploadSucceeded: (cb) => getApi().onUploadSucceeded(cb),
   onUploadFailed: (cb) => getApi().onUploadFailed(cb),
   onUploadRetryScheduled: (cb) => getApi().onUploadRetryScheduled(cb),
+  onPlayPrompt: (cb) => getApi().onPlayPrompt(cb),
+  sendPromptDone: () => getApi().sendPromptDone(),
 };
