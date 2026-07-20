@@ -11,7 +11,7 @@ services:
     runtime: python
     region: singapore          # closest to India; change to oregon if preferred
     plan: free                 # upgrade to starter for always-on
-    buildCommand: apt-get install -y ffmpeg && pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt
     startCommand: bash start.sh
     healthCheckPath: /health
 
