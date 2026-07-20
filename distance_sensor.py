@@ -34,7 +34,7 @@ def main() -> None:
         sensor = DistanceSensor(
             echo=echo_pin,
             trigger=trigger_pin,
-            max_distance=2.0,
+            max_distance=4.0,
             threshold_distance=threshold
         )
     except Exception as e:
