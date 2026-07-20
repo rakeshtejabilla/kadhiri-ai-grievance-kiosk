@@ -42,7 +42,7 @@ async def extract_complaint_info(raw_transcript: str) -> dict:
         "3. Generate a concise English complaint summary.\n"
         "4. Determine the complaint category.\n"
         "5. Determine the priority (High, Medium, Low).\n"
-        "6. Correct spelling and grammar of the transcript while preserving the original spoken language (Telugu, Hindi, or English).\n"
+        "6. Correct spelling and grammar of the transcript. IMPORTANT: `corrected_transcript` MUST be in the EXACT ORIGINAL LANGUAGE AND SCRIPT (e.g., Telugu script for Telugu, Hindi script for Hindi). DO NOT translate it into English.\n"
         "Extract and return ONLY a valid JSON object with these exact keys:\n"
         "  - name (string or null)\n"
         "  - village (string or null)\n"
