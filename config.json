@@ -6,5 +6,6 @@
   "retryInterval": 60000,
   "maxRecordingDurationMs": 120000,
   "mockHardware": false,
-  "gpioPin": 17
+  "gpioTriggerPin": 17,
+  "gpioEchoPin": 27
 }

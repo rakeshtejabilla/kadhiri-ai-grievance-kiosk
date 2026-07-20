@@ -50,11 +50,15 @@ export interface KioskConfig {
   /** true when running with Mock*Provider implementations (no real GPIO/mic hardware) */
   mockHardware: boolean;
   /**
-   * BCM GPIO pin number the PIR sensor OUT wire is connected to.
-   * Defaults to 17 (physical Pin 11) if omitted.
-   * Only used when mockHardware is false.
+   * BCM GPIO pin number for the Ultrasonic Trigger pin.
+   * Defaults to 17 if omitted.
    */
-  gpioPin?: number;
+  gpioTriggerPin?: number;
+  /**
+   * BCM GPIO pin number for the Ultrasonic Echo pin.
+   * Defaults to 27 if omitted.
+   */
+  gpioEchoPin?: number;
 }
 
 export interface RecordingStoppedPayload {

@@ -11,7 +11,7 @@ files:
   - dist-electron/**/*
   - config.json
   - package.json
-  - pir_sensor.py
+  - distance_sensor.py
 
 extraResources:
   - from: config.json

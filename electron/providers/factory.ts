@@ -42,7 +42,7 @@ export function createProviders(config: KioskConfig, window: BrowserWindow): Kio
   // can manually trigger the workflow on the Pi without waving at the sensor.
   const motion: MotionSensorProvider = config.mockHardware
     ? new MockMotionSensorProvider()
-    : new GpioMotionSensorProvider(config.gpioPin ?? 17);
+    : new GpioMotionSensorProvider(config.gpioTriggerPin ?? 17, config.gpioEchoPin ?? 27);
 
   // RendererAudioRecorderProvider uses the browser's MediaRecorder API.
   // Works natively on Windows, macOS and Linux without any CLI tools.

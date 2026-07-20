@@ -9,12 +9,12 @@ import type { MotionListener, MotionSensorProvider } from "./MotionSensorProvide
  * Instead of using the `onoff` npm package (which relies on the deprecated Linux
  * sysfs GPIO interface that is removed on Pi 5 / newer kernels), this provider
  * spawns a lightweight Python subprocess that uses `gpiozero` — a library that
- * ships pre-installed on Raspberry Pi OS and works on ALL Pi models (Pi 4, Pi 5).
- *
  * Wiring:
- *   PIR VCC  → Pi Pin 2  (5 V)
- *   PIR GND  → Pi Pin 6  (GND)
- *   PIR OUT  → Pi Pin 11 (GPIO 17, configurable via gpioPin in config.json)
+ *   HC-SR04 VCC  → Pi Pin 2 or 4 (5 V)
+ *   HC-SR04 GND  → Pi Pin 6      (GND)
+ *   HC-SR04 TRIG → Pi Pin 11     (GPIO 17, configurable in config.json)
+ *   HC-SR04 ECHO → Pi Pin 13     (GPIO 27, configurable in config.json)
+ *   *Note: Use a voltage divider on the ECHO pin to drop 5V to 3.3V to protect the Pi.*
  *
  * Keyboard shortcuts are registered BEFORE GPIO initialisation so they are
  * always available, even when the sensor is starting up or if it fails:
@@ -28,7 +28,7 @@ export class GpioMotionSensorProvider implements MotionSensorProvider {
   private pirProcess: ChildProcess | null = null;
   private shortcutsRegistered = false;
 
-  constructor(private readonly gpioPin: number) {}
+  constructor(private readonly gpioTriggerPin: number, private readonly gpioEchoPin: number) {}
 
   async start(): Promise<void> {
     // Register keyboard shortcuts FIRST so Ctrl+M never falls through to the OS
@@ -72,17 +72,17 @@ export class GpioMotionSensorProvider implements MotionSensorProvider {
   }
 
   /**
-   * Spawns pir_sensor.py which uses gpiozero (Pi 4 + Pi 5 compatible).
+   * Spawns distance_sensor.py which uses gpiozero's DistanceSensor.
    * The script prints "READY" once initialised, then "1" / "0" for each
-   * motion edge. This process lives for the entire kiosk session.
+   * presence edge (within 0.8m). This process lives for the entire kiosk session.
    */
   private startPythonBridge(): Promise<void> {
     return new Promise<void>((resolve) => {
       // In dev mode app.getAppPath() is the project root (next to package.json).
       // In production it is the resources/app directory inside the AppImage.
-      const scriptPath = path.join(app.getAppPath(), "pir_sensor.py");
+      const scriptPath = path.join(app.getAppPath(), "distance_sensor.py");
 
-      this.pirProcess = spawn("python3", [scriptPath, String(this.gpioPin)], {
+      this.pirProcess = spawn("python3", [scriptPath, String(this.gpioTriggerPin), String(this.gpioEchoPin)], {
         stdio: ["ignore", "pipe", "pipe"],
       });
 
@@ -99,14 +99,14 @@ export class GpioMotionSensorProvider implements MotionSensorProvider {
         for (const line of lines) {
           const token = line.trim();
           if (token === "READY") {
-            console.log(`[PIR] Python bridge ready — GPIO${this.gpioPin}. ` +
+            console.log(`[Sensor] Python bridge ready — Trig:GPIO${this.gpioTriggerPin} Echo:GPIO${this.gpioEchoPin}. ` +
               "Ctrl+M / F9 = detected, Ctrl+N / F10 = lost.");
             safeResolve();
           } else if (token === "1") {
-            console.log(`[PIR] Motion DETECTED (GPIO${this.gpioPin})`);
+            console.log(`[Sensor] Presence DETECTED (< 0.8m)`);
             this.notifyDetected();
           } else if (token === "0") {
-            console.log(`[PIR] Motion LOST (GPIO${this.gpioPin})`);
+            console.log(`[Sensor] Presence LOST (> 0.8m)`);
             this.notifyLost();
           }
         }
