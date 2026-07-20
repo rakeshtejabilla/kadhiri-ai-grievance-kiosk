@@ -47,6 +47,14 @@ export const ipcClient: ElectronAPI = {
   onUploadSucceeded: (cb) => getApi().onUploadSucceeded(cb),
   onUploadFailed: (cb) => getApi().onUploadFailed(cb),
   onUploadRetryScheduled: (cb) => getApi().onUploadRetryScheduled(cb),
-  onPlayPrompt: (cb) => getApi().onPlayPrompt(cb),
-  sendPromptDone: () => getApi().sendPromptDone(),
+  onPlayPrompt: (cb) => {
+    const api = getApi();
+    return typeof api.onPlayPrompt === "function" ? api.onPlayPrompt(cb) : () => {};
+  },
+  sendPromptDone: () => {
+    const api = getApi();
+    if (typeof api.sendPromptDone === "function") {
+      api.sendPromptDone();
+    }
+  },
 };
