@@ -55,11 +55,11 @@ async def upload_audio(
         await out_file.write(content)
 
     try:
-        # Step 2: Transcribe via Whisper — returns (original, english_translation)
-        transcript, transcript_english = await ai_service.process_audio(temp_file_path)
+        # Step 2: Transcribe via AI - returns the raw transcript
+        transcript = await ai_service.process_audio(temp_file_path)
 
-        # Step 3: Extract structured data and correct the native spelling
-        extracted_data = await ai_service.extract_complaint_info(transcript, transcript_english)
+        # Step 3: Extract structured data, correct native spelling, and get english translation
+        extracted_data = await ai_service.extract_complaint_info(transcript)
 
         # Step 4: Validate Machine ID
         machine_query = await db.execute(select(Machine).filter(Machine.id == machine_id))
@@ -78,7 +78,7 @@ async def upload_audio(
             complaint_id=complaint_id,
             machine_id=machine_id,
             transcript=extracted_data.get("corrected_transcript", transcript),
-            transcript_english=transcript_english,
+            transcript_english=extracted_data.get("english_translation", ""),
             citizen_name=extracted_data.get("name"),
             village=extracted_data.get("village"),
             address=extracted_data.get("address"),
