@@ -48,14 +48,13 @@ export function loadConfig(): KioskConfig {
     }
   }
 
-  // To test against your LOCAL backend instead of Render, uncomment this block:
-  
-  if (process.env.NODE_ENV === "development") {
-    // eslint-disable-next-line no-console
-    console.log("[config] DEV mode — overriding serverUrl to http://localhost:8000");
-    config = { ...config, serverUrl: "http://localhost:8000" };
-  }
-  
+  // DEV mode override is disabled — using serverUrl from config.json (Render backend).
+  // To test against a LOCAL backend, uncomment the block below:
+  //
+  // if (process.env.NODE_ENV === "development") {
+  //   console.log("[config] DEV mode — overriding serverUrl to http://localhost:8000");
+  //   config = { ...config, serverUrl: "http://localhost:8000" };
+  // }
 
   return config;
 }
