@@ -12,7 +12,7 @@ export class PiCameraProvider implements CameraProvider {
   async captureImage(): Promise<string> {
     const userDataDir = app.getPath("userData");
     const tempDir = path.join(userDataDir, "temp");
-    
+
     // Ensure temp directory exists
     try {
       await fs.mkdir(tempDir, { recursive: true });
@@ -28,10 +28,11 @@ export class PiCameraProvider implements CameraProvider {
       // Use fswebcam to capture a frame.
       // -r 1920x1080 sets the resolution
       // --no-banner removes the timestamp banner
-      const { stdout, stderr } = await execAsync(`fswebcam -r 1920x1080 --no-banner "${filepath}"`);
+      // --skip 10 drops the first 10 frames to let the camera warm up (prevents timeout error)
+      const { stdout, stderr } = await execAsync(`fswebcam -r 1920x1080 --no-banner --skip 10 "${filepath}"`);
       if (stdout) console.log("[fswebcam stdout]", stdout);
       if (stderr) console.error("[fswebcam stderr]", stderr);
-      
+
       return filepath;
     } catch (error) {
       console.error("Failed to capture image:", error);
