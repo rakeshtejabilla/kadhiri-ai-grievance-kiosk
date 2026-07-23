@@ -24,13 +24,17 @@ export class PiCameraProvider implements CameraProvider {
     const filepath = path.join(tempDir, filename);
 
     try {
-      // Use libcamera-jpeg to capture a frame. 
+      // Use rpicam-jpeg to capture a frame (for newer Bookworm OS). 
+      // Fallback to libcamera-jpeg (for Bullseye).
       // --immediate captures as quickly as possible without warmup.
-      // -o specifies the output file.
-      await execAsync(`libcamera-jpeg --immediate -o "${filepath}" --width 1920 --height 1080`);
+      try {
+        await execAsync(`rpicam-jpeg --immediate -o "${filepath}" --width 1920 --height 1080`);
+      } catch (e) {
+        await execAsync(`libcamera-jpeg --immediate -o "${filepath}" --width 1920 --height 1080`);
+      }
       return filepath;
     } catch (error) {
-      console.error("Failed to capture image with libcamera-jpeg:", error);
+      console.error("Failed to capture image:", error);
       throw error;
     }
   }
