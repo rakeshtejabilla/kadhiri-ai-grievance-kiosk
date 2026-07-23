@@ -24,14 +24,11 @@ export class PiCameraProvider implements CameraProvider {
     const filepath = path.join(tempDir, filename);
 
     try {
-      // Use rpicam-jpeg to capture a frame (for newer Bookworm OS). 
-      // Fallback to libcamera-jpeg (for Bullseye).
-      // --immediate captures as quickly as possible without warmup.
-      try {
-        await execAsync(`rpicam-jpeg --immediate -o "${filepath}" --width 1920 --height 1080`);
-      } catch (e) {
-        await execAsync(`libcamera-jpeg --immediate -o "${filepath}" --width 1920 --height 1080`);
-      }
+      // The user has a USB camera connected to the Raspberry Pi.
+      // Use fswebcam to capture a frame.
+      // -r 1920x1080 sets the resolution
+      // --no-banner removes the timestamp banner
+      await execAsync(`fswebcam -r 1920x1080 --no-banner "${filepath}"`);
       return filepath;
     } catch (error) {
       console.error("Failed to capture image:", error);
