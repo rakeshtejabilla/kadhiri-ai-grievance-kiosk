@@ -33,6 +33,7 @@ async def upload_audio(
     timestamp: str = Form(...),
     location: str = Form(...),
     audio: UploadFile = File(...),
+    image: UploadFile = File(None),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -60,6 +61,13 @@ async def upload_audio(
 
         # Step 3: Extract structured data, correct native spelling, and get english translation
         extracted_data = await ai_service.extract_complaint_info(transcript)
+        
+        # Step 3.5: Read photo data if an image was provided
+        photo_data = None
+        if image:
+            if not image.filename.lower().endswith((".jpg", ".jpeg")):
+                raise HTTPException(status_code=400, detail="Only .jpg or .jpeg image files are supported")
+            photo_data = await image.read()
 
         # Step 4: Validate Machine ID
         machine_query = await db.execute(select(Machine).filter(Machine.id == machine_id))
@@ -84,7 +92,8 @@ async def upload_audio(
             address=extracted_data.get("address"),
             complaint=extracted_data.get("complaint", "Unknown issue"),
             category=extracted_data.get("category"),
-            priority=extracted_data.get("priority")
+            priority=extracted_data.get("priority"),
+            photo=photo_data
         )
 
         db.add(new_complaint)

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text, Boolean, Enum
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text, Boolean, Enum, LargeBinary
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
@@ -47,6 +47,7 @@ class Complaint(Base):
     category = Column(String, nullable=True)
     priority = Column(String, nullable=True)
     status = Column(Enum(ComplaintStatusEnum), default=ComplaintStatusEnum.PROCESSING)
+    photo = Column(LargeBinary, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     

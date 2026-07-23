@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.db.database import get_db
@@ -47,3 +47,18 @@ async def get_complaint(
     if not complaint:
         raise HTTPException(status_code=404, detail="Complaint not found")
     return complaint
+
+@router.get("/{complaint_id}/photo")
+async def get_complaint_photo(
+    complaint_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get complaint photo by ID (Admin API)
+    """
+    result = await db.execute(select(Complaint).filter(Complaint.complaint_id == complaint_id))
+    complaint = result.scalars().first()
+    if not complaint or not complaint.photo:
+        raise HTTPException(status_code=404, detail="Photo not found")
+    return Response(content=complaint.photo, media_type="image/jpeg")
