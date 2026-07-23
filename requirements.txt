@@ -17,6 +17,10 @@ asyncpg>=0.29.0
 pydantic>=2.7.4
 pydantic-settings>=2.3.4
 
+# OS Requirements for Raspberry Pi Camera:
+# For USB Cameras (Current Setup): sudo apt update && sudo apt install -y fswebcam
+# For Native Pi Cameras (CSI): sudo apt update && sudo apt install -y libcamera-apps
+
 # Authentication & Security
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
