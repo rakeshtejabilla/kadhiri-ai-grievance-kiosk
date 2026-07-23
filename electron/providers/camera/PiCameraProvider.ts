@@ -28,7 +28,10 @@ export class PiCameraProvider implements CameraProvider {
       // Use fswebcam to capture a frame.
       // -r 1920x1080 sets the resolution
       // --no-banner removes the timestamp banner
-      await execAsync(`fswebcam -r 1920x1080 --no-banner "${filepath}"`);
+      const { stdout, stderr } = await execAsync(`fswebcam -r 1920x1080 --no-banner "${filepath}"`);
+      if (stdout) console.log("[fswebcam stdout]", stdout);
+      if (stderr) console.error("[fswebcam stderr]", stderr);
+      
       return filepath;
     } catch (error) {
       console.error("Failed to capture image:", error);
