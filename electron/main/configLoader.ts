@@ -49,13 +49,13 @@ export function loadConfig(): KioskConfig {
   }
 
   // To test against your LOCAL backend instead of Render, uncomment this block:
-  /*
+  
   if (process.env.NODE_ENV === "development") {
     // eslint-disable-next-line no-console
     console.log("[config] DEV mode — overriding serverUrl to http://localhost:8000");
     config = { ...config, serverUrl: "http://localhost:8000" };
   }
-  */
+  
 
   return config;
 }

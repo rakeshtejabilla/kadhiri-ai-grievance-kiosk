@@ -11,12 +11,16 @@ import { MockUploaderProvider } from "./network/MockUploaderProvider.js";
 import { HttpUploaderProvider } from "./network/HttpUploaderProvider.js";
 import type { StorageProvider } from "./storage/StorageProvider.js";
 import { LocalStorageProvider } from "./storage/LocalStorageProvider.js";
+import type { CameraProvider } from "./camera/CameraProvider.js";
+import { MockCameraProvider } from "./camera/MockCameraProvider.js";
+import { PiCameraProvider } from "./camera/PiCameraProvider.js";
 
 export interface KioskProviders {
   motion: MotionSensorProvider;
   audio: AudioRecorderProvider;
   uploader: UploaderProvider;
   storage: StorageProvider;
+  camera: CameraProvider;
 }
 
 /**
@@ -54,5 +58,9 @@ export function createProviders(config: KioskConfig, window: BrowserWindow): Kio
 
   const storage: StorageProvider = new LocalStorageProvider(userDataDir);
 
-  return { motion, audio, uploader, storage };
+  const camera: CameraProvider = config.mockHardware
+    ? new MockCameraProvider()
+    : new PiCameraProvider();
+
+  return { motion, audio, uploader, storage, camera };
 }

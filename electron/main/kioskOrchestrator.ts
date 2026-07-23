@@ -17,6 +17,7 @@ export class KioskOrchestrator {
   private retryTimer: NodeJS.Timeout | null = null;
   private uploadAttempt = 0;
   private isPrompting = false;
+  private currentImagePath: string | undefined;
   private readonly onPromptDone = () => void this.handlePromptDone();
 
   constructor(
@@ -55,6 +56,13 @@ export class KioskOrchestrator {
     if (!this.isPrompting) return; // ignoring duplicate or stray events
     this.isPrompting = false;
 
+    try {
+      this.currentImagePath = await this.providers.camera.captureImage();
+    } catch (err) {
+      console.warn("Failed to capture image, proceeding without it", err);
+      this.currentImagePath = undefined;
+    }
+
     this.recordingStartedAt = Date.now();
     await this.providers.audio.start();
     this.send(IpcChannels.RECORDING_STARTED);
@@ -89,8 +97,12 @@ export class KioskOrchestrator {
       location: this.config.location,
     };
 
+    const imagePathToUpload = this.currentImagePath;
+    this.currentImagePath = undefined;
+
     await this.providers.storage.enqueue({
       filePath,
+      imagePath: imagePathToUpload,
       machineId: metadata.machineId,
       timestamp: metadata.timestamp,
       location: metadata.location,
@@ -102,7 +114,7 @@ export class KioskOrchestrator {
     try {
       const result = await this.providers.uploader.upload(filePath, metadata, (percent) => {
         this.send(IpcChannels.UPLOAD_PROGRESS, { percent });
-      });
+      }, imagePathToUpload);
 
       await this.providers.storage.dequeue(filePath);
       this.send(IpcChannels.UPLOAD_SUCCEEDED, {
@@ -143,7 +155,7 @@ export class KioskOrchestrator {
           machineId: entry.machineId,
           timestamp: entry.timestamp,
           location: entry.location,
-        });
+        }, undefined, entry.imagePath);
         await this.providers.storage.dequeue(entry.filePath);
         this.send(IpcChannels.UPLOAD_SUCCEEDED, {
           machineId: entry.machineId,

@@ -1,5 +1,6 @@
 export interface QueuedUpload {
   filePath: string;
+  imagePath?: string;
   machineId: string;
   timestamp: string;
   location: string;

@@ -16,6 +16,7 @@ export class MockUploaderProvider implements UploaderProvider {
     _filePath: string,
     _metadata: UploadMetadata,
     onProgress?: UploadProgressListener,
+    _imagePath?: string
   ): Promise<UploadResult> {
     const steps = [10, 25, 45, 65, 80, 100];
     for (const percent of steps) {

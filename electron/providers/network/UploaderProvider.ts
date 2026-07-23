@@ -21,5 +21,6 @@ export interface UploaderProvider {
     filePath: string,
     metadata: UploadMetadata,
     onProgress?: UploadProgressListener,
+    imagePath?: string
   ): Promise<UploadResult>;
 }

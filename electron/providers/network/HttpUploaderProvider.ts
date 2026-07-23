@@ -22,6 +22,7 @@ export class HttpUploaderProvider implements UploaderProvider {
     filePath: string,
     metadata: UploadMetadata,
     onProgress?: UploadProgressListener,
+    imagePath?: string
   ): Promise<UploadResult> {
     const form = new FormData();
     form.append("machine_id", metadata.machineId);
@@ -36,6 +37,19 @@ export class HttpUploaderProvider implements UploaderProvider {
       contentType: isWav ? "audio/wav" : "audio/webm",
       knownLength: size,
     });
+
+    if (imagePath) {
+      try {
+        const imgStat = await stat(imagePath);
+        form.append("image", createReadStream(imagePath), {
+          filename: "image.jpg",
+          contentType: "image/jpeg",
+          knownLength: imgStat.size,
+        });
+      } catch (err) {
+        console.warn(`Failed to attach image from ${imagePath}`, err);
+      }
+    }
 
     const url = `${this.serverUrl.replace(/\/$/, "")}/api/v1/audio/upload`;
 
